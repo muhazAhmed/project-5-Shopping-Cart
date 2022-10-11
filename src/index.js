@@ -1,7 +1,9 @@
 const express=require('express')
 const mongoose=require('mongoose')
 const route=require('./routes/route.js')
+const multer= require("multer");
 const app=express();
+app.use( multer().any())
 
 app.use(express.json())
 
@@ -12,5 +14,5 @@ mongoose.connect("mongodb+srv://FARINEKHAN:EXtlAhONzagSoJCy@cluster0.wge8afd.mon
 app.use('/',route)
 //connecting port//
 app.listen(3000,function(){
-    console.log("express at running on port" + (3000))
+    console.log("express running on port " + ( 3000))
 })
