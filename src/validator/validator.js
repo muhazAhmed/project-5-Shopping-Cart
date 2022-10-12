@@ -17,7 +17,7 @@ const isValidAddress = function (value) {
   return false;
 };
 const isValidNo = function (value) {
-  if (typeof value === "number") return true;
+  if (/[0-9]$/.test(value)) return true;
   return false;
 };
 
@@ -27,7 +27,7 @@ const isValidMobile = function (value) {
 };
 
 const isValidpin = function (value) {
-  if (typeof value === "string" && /[0-9]\d{5}$/gi.test(value)) return true;
+  if (/[0-9]\d{5}$/gi.test(value)) return true;
   return false;
 };
 

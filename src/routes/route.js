@@ -11,6 +11,8 @@ router.get("/user/:userId/profile",authentication,authorization,userController.g
 router.put("/user/:userId/profile",authentication,authorization,userController.updateUser)
 
 // ======================> for product <==================
+router.post("/products",productController.createProduct )
+router.get("/products",productController.getProductByQuery )
 router.get("/products/:productId",productController.productByid )
 router.delete("/products/:productId",productController.deleteByid )
 

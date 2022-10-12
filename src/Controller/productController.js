@@ -1,12 +1,13 @@
 const productModel = require("../model/productModel");
 const valid = require("../validator/validator");
+const {uploadFile}=require("../aws/aws")
+
 
 const titleRegex = /^[a-zA-Z ]{2,45}$/;
 
 
 const createProduct = async function (req, res) {
   try {
-    let productId = req.params.productId;
     let data = req.body;
     let files = req.files;
 
@@ -21,7 +22,6 @@ const createProduct = async function (req, res) {
       description,
       price,
       isFreeShipping,
-      currencyFormat,
       style,
       availableSizes,
       installments,
@@ -48,8 +48,7 @@ const createProduct = async function (req, res) {
   
  
       if (!valid.isValid(description))
-        return res
-          .status(400)
+        return res.status(400)
           .send({ status: false, message: "description is required." });
 
           
@@ -71,7 +70,7 @@ const createProduct = async function (req, res) {
    data.currencyFormat="₹"
 
 
-      if (!valid.isValid(style) || valid.isValidString(style))
+      if (!valid.isValid(style))
         return res
           .status(400)
           .send({
@@ -95,72 +94,58 @@ const createProduct = async function (req, res) {
         .map((x) => x.trim());
       for (let i = 0; i < size2.length; i++) {
         if (!size1.includes(size2[i])) {
-          return res
-            .status(400)
+          return res.status(400)
             .send({
               status: false,
               message:
                 "Sizes should one of these - 'S', 'XS', 'M', 'X', 'L', 'XXL' and 'XL'",
             });
+          }
         }
-
-  
+        data.availableSizes=size2
       isFreeShipping = isFreeShipping.toLowerCase();
-      if (isFreeShipping == "true" || isFreeShipping == "false") {
-        isFreeShipping = JSON.parse(isFreeShipping);
-      } else {
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "Enter a valid value for isFreeShipping",
-          });
-      }
-      if (typeof isFreeShipping != "boolean") {
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "isFreeShipping must be a boolean value",
-          });
-      }
-      updatedata.isFreeShipping = isFreeShipping;
+      if(files && files.length>0){
+        let uploadedFileURL= await uploadFile(files[0])
+        data.productImage=uploadedFileURL
     }
-
-    if (files == [])
-      return res
-        .status(400)
-        .send({ status: false, message: "provide image in files" });
-
-    if (files && files.length > 0) {
-      let uploadedFileURL = await uploadFile(files[0]);
-      updatedata.productImage = uploadedFileURL;
-      if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i.test(updatedata.productImage))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message:
-              "Please provide profileImage in correct format like jpeg,png,jpg,gif,bmp etc",
-          });
+    else{
+        return res.status(400).send({ msg: "No file found" })
     }
-
-    let updateData = await productModel
-      .findOneAndUpdate(
-        {
-          _id: productId,
-        },
-        { $set: { ...updatedata }, $addToSet: { availableSizes } },
-        { new: true }
-      )
-      .select({ __v: 0 });
-    res
-      .status(200)
-      .send({ status: true, message: "product updated", data: updateData });
+      
+    let saveData = await productModel .create(data)
+    
+    res.status(200).send({ status: true, data: saveData });
   } catch (error) {
     res.status(500).send({ status: false, message: error.message });
   }
-};
+  }
+
+// ==========================>  getByQueryParams  <================================
+
+const getProductByQuery = async function (req, res) {
+  try {
+    let queries=req.query
+    let{size,name,priceGreaterThan,priceLessThan}=queries
+    let foundData={}
+  //==size==//
+if(size)
+    {    let getSize= await productModel.find({availableSizes:size},{isDeleted:false})
+   //return res.status(200).send({ status: false, message: getSize });}
+   foundData.size=getSize}
+//===name==//
+if(name)
+{let getTitle= await productModel.find({title:name},{isDeleted:false})
+//return res.status(200).send({ status: false, message: getTitle });}
+foundData.name=getTitle}
+console.log(foundData)
+//let getData= await productModel.find(foundData)
+return res.status(200).send({ status: false, message: foundData });
+  } catch (error) {
+    res.status(500).send({ status: false, message: error.message });
+    
+  }
+}
+
 
 
 // ==========================>  getById   <================================
@@ -445,4 +430,4 @@ const deleteByid = async function (req, res) {
   }
 };
 
-module.exports = {productByid,deleteByid }
+module.exports = {productByid,deleteByid ,createProduct,getProductByQuery}
