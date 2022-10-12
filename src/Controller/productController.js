@@ -1,4 +1,4 @@
-const productModel = require("../Models/productModel");
+const productModel = require("../model/productModel");
 const valid = require("../validator/validator");
 
 // ==========================>  getById   <================================
@@ -61,3 +61,5 @@ const deleteByid = async function (req, res) {
     return res.status(500).send({ status: false, message: error.message });
   }
 };
+
+module.exports = {productByid,deleteByid }
