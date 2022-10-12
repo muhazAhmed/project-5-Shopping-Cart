@@ -155,26 +155,31 @@ let updateUser = async (req, res) => {
         let { lname, fname, password, address, phone, email} = req.body
         let UserId = req.params.userId
         let files = req.files
-        if (files && files.length > 0) {
-
-            let uploadedFileURL = await uploadFile(files[0])
-            req.body.profileImage = uploadedFileURL
-        }
-
         if (!valid.isValidRequestBody(req.body)) {
             return res.status(400).send({ status: false, message: "Provide details to Update" })
         }
+        let updateData={}
+
+        if (files && files.length > 0) {
+
+            let uploadedFileURL = await uploadFile(files[0])
+            updateData.profileImage = uploadedFileURL
+        }
+        
         if (fname) {
 
             if (!valid.isValidName(fname)) {
                 return res.status(400).send({ status: false, message: "Provide valid First name" })
             }
+            updateData.fname=fname
         }
 
         if (lname) {
             if (!valid.isValidName(lname)) {
                 return res.status(400).send({ status: false, message: "Provide valid last name" })
             }
+            updateData.lname=lname
+
         }
         if (email) {
             if (!valid.isValidEmail(email)) {
@@ -184,6 +189,8 @@ let updateUser = async (req, res) => {
             if (checkemail) {
                 return res.status(400).send({ status: false, message: "Email already present" })
             }
+            updateData.email=email
+
         }
 
         if (phone) {
@@ -194,6 +201,8 @@ let updateUser = async (req, res) => {
             if (checkphone) {
                 return res.status(400).send({ status: false, message: "phone already present" })
             }
+            updateData.phone=phone
+
         }
 
         if (password) {
@@ -201,29 +210,51 @@ let updateUser = async (req, res) => {
                 return res.status(400).send({ status: false, message: "Provide valid password" })
             }
             const salt = await bcrypt.genSalt(10)
-           req.body.password = await bcrypt.hash(password, salt)
+           updateData.password = await bcrypt.hash(password, salt)
         }
         if (address) {
-           if(address["shipping"]["street"]){
+          if(address.shipping)
+            {
+            if(address["shipping"]["street"]){
             if (!valid.isValid(address["shipping"]["street"])) { return res.status(400).send({ status: false, msg: "provid street address" });
-        }}
+        }
+          updateData["address.shipping.street"]=address.shipping.street
+
+    }
         if(address["shipping"]["city"])
         {if (!valid.isValid(address["shipping"]["city"])) { return res .status(400) .send({ status: false, msg: "provid city address" });
-        }}
+        }
+        updateData["address.shipping.city"]=address.shipping.city
+
+    }
         if(address["shipping"]["pincode"])
        { if (!valid.isValidpin(address.shipping.pincode)) {return res.status(400).send({ status: false, msg: " pincode must have 6 digits only" });
-        }}
-        if(address["billing"]["street"])
+        }
+        updateData["address.shipping.pincode"]=address.shipping.pincode
+
+    }}
+      
+        if(address.billing)
+        {  if(address["billing"]["street"])
         {if (!valid.isValid(address.billing.street)) { return res.status(400).send({ status: false, msg: "provid street address" });
-        }}
+        }
+        updateData["address.billing.street"]=address.billing.street
+
+    }
         if(address["billing"]["city"])
        { if (!valid.isValid(address.billing.city)) { return res .status(400) .send({ status: false, msg: "provid city address" });
-        }}
+        }
+        updateData["address.billing.city"]=address.billing.city
+
+    }
         if(address["billing"]["pincode"])
        { if (!valid.isValidpin(address.billing.pincode)) {return res.status(400).send({ status: false, msg: " pincode must have 6 digits only" });
-        }}
         }
-        let updatedData = await userModel.findOneAndUpdate({_id:UserId},req.body,{new:true})
+        updateData["address.billing.pincode"]=address.billing.pincode
+
+    }}
+        }
+        let updatedData = await userModel.findOneAndUpdate({_id:UserId},updateData,{new:true})
         return res.status(200).send({ status: true, Data : updatedData})
 
     }

@@ -3,6 +3,166 @@ const valid = require("../validator/validator");
 
 const titleRegex = /^[a-zA-Z ]{2,45}$/;
 
+
+const createProduct = async function (req, res) {
+  try {
+    let productId = req.params.productId;
+    let data = req.body;
+    let files = req.files;
+
+   //                                <<===emptyRequest===>>                                   //
+   if (!valid.isValidRequestBody(data)) {
+    return res.status(400).send({ status: false, msg: "plz provide data" });
+    }
+
+
+    let {
+      title,
+      description,
+      price,
+      isFreeShipping,
+      currencyFormat,
+      style,
+      availableSizes,
+      installments,
+    } = data;
+
+    
+      if (!valid.isValid(title))
+        return res
+          .status(400)
+          .send({ status: false, message: "Title is required." });
+      if (!titleRegex.test(title))
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: " Please provide valid title including characters only.",
+          });
+
+      let checkTitle = await productModel.findOne({ title: data.title });
+      if (checkTitle)
+        return res
+          .status(400)
+          .send({ status: false, message: "Title already exist" });
+  
+ 
+      if (!valid.isValid(description))
+        return res
+          .status(400)
+          .send({ status: false, message: "description is required." });
+
+          
+      if (!(price))
+      return res
+        .status(400)
+        .send({
+          status: false,
+          message: "price Should be in number only...!",
+        });
+      if (! valid.isValidPrice(price))
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: "price Should be in number only...!",
+          });
+   data.currencyId="INR"
+   data.currencyFormat="₹"
+
+
+      if (!valid.isValid(style) || valid.isValidString(style))
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: "Style should be valid an does not contain numbers",
+          });
+      
+    
+      if (!valid.isValidNo(installments))
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: "Installments should be in numbers",
+          });
+
+      let size1 = ["S", "XS", "M", "X", "L", "XXL", "XL"];
+      let size2 = availableSizes
+        .toUpperCase()
+        .split(",")
+        .map((x) => x.trim());
+      for (let i = 0; i < size2.length; i++) {
+        if (!size1.includes(size2[i])) {
+          return res
+            .status(400)
+            .send({
+              status: false,
+              message:
+                "Sizes should one of these - 'S', 'XS', 'M', 'X', 'L', 'XXL' and 'XL'",
+            });
+        }
+
+  
+      isFreeShipping = isFreeShipping.toLowerCase();
+      if (isFreeShipping == "true" || isFreeShipping == "false") {
+        isFreeShipping = JSON.parse(isFreeShipping);
+      } else {
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: "Enter a valid value for isFreeShipping",
+          });
+      }
+      if (typeof isFreeShipping != "boolean") {
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: "isFreeShipping must be a boolean value",
+          });
+      }
+      updatedata.isFreeShipping = isFreeShipping;
+    }
+
+    if (files == [])
+      return res
+        .status(400)
+        .send({ status: false, message: "provide image in files" });
+
+    if (files && files.length > 0) {
+      let uploadedFileURL = await uploadFile(files[0]);
+      updatedata.productImage = uploadedFileURL;
+      if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i.test(updatedata.productImage))
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message:
+              "Please provide profileImage in correct format like jpeg,png,jpg,gif,bmp etc",
+          });
+    }
+
+    let updateData = await productModel
+      .findOneAndUpdate(
+        {
+          _id: productId,
+        },
+        { $set: { ...updatedata }, $addToSet: { availableSizes } },
+        { new: true }
+      )
+      .select({ __v: 0 });
+    res
+      .status(200)
+      .send({ status: true, message: "product updated", data: updateData });
+  } catch (error) {
+    res.status(500).send({ status: false, message: error.message });
+  }
+};
+
+
 // ==========================>  getById   <================================
 
 const productByid = async function (req, res) {

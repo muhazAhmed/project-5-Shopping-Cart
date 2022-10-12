@@ -16,6 +16,10 @@ const isValidAddress = function (value) {
   if (typeof value === "object") return true;
   return false;
 };
+const isValidNo = function (value) {
+  if (typeof value === "number") return true;
+  return false;
+};
 
 const isValidMobile = function (value) {
   if (typeof value === "string" && /^[0-9]\d{9}$/gi.test(value)) return true;
@@ -56,7 +60,7 @@ const isValidObjectId = function (objectId) {
 //   if (typeof value == "string") return true;
 // }
 const isValidString = (String) => {
-  return /\d/.test(String)
+  return /^[a-zA-Z ]{2,45}$/.test(String)
 }
 
 const isValidPrice = (price) => {
@@ -68,4 +72,4 @@ const isValidPrice = (price) => {
 
 
 module.exports = { isValid, isValidRequestBody, isValidObjectId, isValidEmail, isValidPassword,
- isValidName, isValidMobile, isValidpin,isValidAddress, isValidString, isValidPrice};
+ isValidName, isValidMobile, isValidpin,isValidAddress, isValidString, isValidPrice,isValidNo};
