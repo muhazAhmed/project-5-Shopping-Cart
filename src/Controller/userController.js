@@ -54,17 +54,23 @@ const salt = await bcrypt.genSalt(10)
 data.password = await bcrypt.hash(data.password, salt)
 //--address--//
 
-if (!valid.isValid(address)) {return res.status(400).send({ status: false,
+if (!valid.isValidAddress(address)) {return res.status(400).send({ status: false,
 msg: "address required ", });}
 
+if (!valid.isValidAddress(address.shipping)) {return res.status(400).send({ status: false,
+msg: "shipping address is required ", });}
 if (!valid.isValid(address["shipping"]["street"])) { return res.status(400).send({ status: false, msg: "provid street address" });
 }
 
 if (!valid.isValid(address["shipping"]["city"])) { return res .status(400) .send({ status: false, msg: "provid city address" });
 }
 
-if (!valid.isValidpin(address.shipping.pincode)) {return res.status(400).send({ status: false, msg: " pincode must have 6 digits only" });
+if (!valid.isValidpin(address.shipping.pincode)) {return res.status(400).send({ status: false, msg: " pincode is required & must have 6 digits only" });
 }
+
+if (!valid.isValidAddress(address.billing)) {return res.status(400).send({ status: false,
+msg: "billing address is required ", });}
+
 if (!valid.isValid(address.billing.street)) { return res.status(400).send({ status: false, msg: "provid street address" });
 }
 

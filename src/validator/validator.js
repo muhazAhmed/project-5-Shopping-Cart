@@ -7,7 +7,13 @@ const isValidName = function (value) {
 };
 
 const isValid = function (value) {
+
   if (typeof value === "string" && value.trim().length > 0) return true;
+  return false;
+};
+const isValidAddress = function (value) {
+
+  if (typeof value === "object") return true;
   return false;
 };
 
@@ -46,4 +52,4 @@ const isValidObjectId = function (objectId) {
 
 
 module.exports = { isValid, isValidRequestBody, isValidObjectId, isValidEmail, isValidPassword,
- isValidName, isValidMobile, isValidpin };
+ isValidName, isValidMobile, isValidpin,isValidAddress };

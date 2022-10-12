@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const valid = require ("../validator/validator")
 
 const authentication = (req, res, next) => {
     try {
@@ -30,11 +31,12 @@ const authorization = async (req,res,next)=>{
         if(!valid.isValidObjectId(userid)){return res.status(400).send({status:false,message:"plz enter valid userId"})}
         if(userid!=decodedToken.userId){
             return res.status(403).send({status:false,message:"you are not authorised"})
-
+            
         }else{
             next()
         }
     } catch (error) {
+        res.status(500).send({ status: false, err: error.message });
         
     }
 }
