@@ -139,14 +139,21 @@ if(name)
 foundData.name=getTitle}
 console.log(foundData)
 //let getData= await productModel.find(foundData)
+
+// let data = {}
+// if(size && name){
+//   data= await productModel.find({title:name, availableSizes: size},{isDeleted:false})
+// }else if(name){
+//   data= await productModel.find({title:name},{isDeleted:false})
+// }else if(size){
+//   data= await productModel.find({availableSizes: size},{isDeleted:false})
+// }
+
 return res.status(200).send({ status: false, message: foundData });
   } catch (error) {
     res.status(500).send({ status: false, message: error.message });
-    
   }
 }
-
-
 
 // ==========================>  getById   <================================
 
@@ -221,7 +228,7 @@ const updateProduct = async function (req, res) {
 
     let updatedata = {};
 
-    if (title || title == "") {
+    if (title) {
       if (!valid.isValid(title))
         return res
           .status(400)
@@ -250,8 +257,8 @@ const updateProduct = async function (req, res) {
       updatedata.description = description;
     }
 
-    if (price || price == "") {
-      if (!(valid.isValid(price) && valid.isValidPrice(price)))
+    if (price) {
+      if (!valid.isValidPrice(price))
         return res
           .status(400)
           .send({
@@ -261,63 +268,50 @@ const updateProduct = async function (req, res) {
       updatedata.price = price;
     }
 
-    if (currencyId || typeof currencyId == "string") {
-      if (!/INR/.test(currencyId))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message:
-              "Currency Id of product should be in uppercase 'INR' format",
-          });
-      updatedata.currencyId = currencyId;
-    }
+    // if (currencyId || typeof currencyId == "string") {
+    //   if (!/INR/.test(currencyId))
+    //     return res
+    //       .status(400)
+    //       .send({
+    //         status: false,
+    //         message:
+    //           "Currency Id of product should be in uppercase 'INR' format",
+    //       });
+    //   updatedata.currencyId = currencyId;
+    // }
 
-    if (currencyFormat || typeof currencyFormat == "string") {
-      if (!/₹/.test(currencyFormat))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "Currency format/symbol of product should be in '₹' ",
-          });
-      updatedata.currencyFormat = currencyFormat;
-    }
+    // if (currencyFormat || typeof currencyFormat == "string") {
+    //   if (!/₹/.test(currencyFormat))
+    //     return res
+    //       .status(400)
+    //       .send({
+    //         status: false,
+    //         message: "Currency format/symbol of product should be in '₹' ",
+    //       });
+    //   updatedata.currencyFormat = currencyFormat;
+    // }
 
-    if (style || typeof style == "string") {
-      if (!valid.isValid(style) || valid.isValidString(style))
+    if (style) {
+      if (!valid.isValidString(style))
         return res
           .status(400)
           .send({
             status: false,
             message: "Style should be valid an does not contain numbers",
           });
-      if (!titleRegex.test(style))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: " Please provide valid style including characters only.",
-          });
       updatedata.style = style;
     }
 
-    if (installments || typeof installments == "string") {
-      if (!valid.isValidString(installments))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "Installments should be in numbers",
-          });
-      if (!valid.isValidPrice(installments))
+    if (installments) {
+      if (!valid.isValidNo(installments))
         return res
           .status(400)
           .send({ status: false, message: "Installments should be valid" });
+
       updatedata.installments = installments;
     }
 
-    if (availableSizes || typeof availableSizes == "string") {
+    if (availableSizes) {
       let size1 = ["S", "XS", "M", "X", "L", "XXL", "XL"];
       let size2 = availableSizes
         .toUpperCase()
@@ -333,7 +327,7 @@ const updateProduct = async function (req, res) {
                 "Sizes should one of these - 'S', 'XS', 'M', 'X', 'L', 'XXL' and 'XL'",
             });
         }
-        availableSizes = size2;
+        updatedata.availableSizes = size2;
       }
     }
 
@@ -383,7 +377,7 @@ const updateProduct = async function (req, res) {
         {
           _id: productId,
         },
-        { $set: { ...updatedata }, $addToSet: { availableSizes } },
+        updatedata,
         { new: true }
       )
       .select({ __v: 0 });
@@ -430,4 +424,4 @@ const deleteByid = async function (req, res) {
   }
 };
 
-module.exports = {productByid,deleteByid ,createProduct,getProductByQuery}
+module.exports = {productByid,deleteByid ,createProduct,getProductByQuery, updateProduct}
