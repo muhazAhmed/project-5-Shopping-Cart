@@ -1,6 +1,7 @@
 const productModel = require("../model/productModel");
 const valid = require("../validator/validator");
-const {uploadFile}=require("../aws/aws")
+const {uploadFile}=require("../aws/aws");
+const { Query } = require("mongoose");
 
 
 const titleRegex = /^[a-zA-Z ]{2,45}$/;
@@ -124,36 +125,53 @@ const createProduct = async function (req, res) {
 
 const getProductByQuery = async function (req, res) {
   try {
-    let queries=req.query
-    let{size,name,priceGreaterThan,priceLessThan}=queries
-    let foundData={}
-  //==size==//
-if(size)
-    {    let getSize= await productModel.find({availableSizes:size},{isDeleted:false})
-   //return res.status(200).send({ status: false, message: getSize });}
-   foundData.size=getSize}
-//===name==//
-if(name)
-{let getTitle= await productModel.find({title:name},{isDeleted:false})
-//return res.status(200).send({ status: false, message: getTitle });}
-foundData.name=getTitle}
-console.log(foundData)
-//let getData= await productModel.find(foundData)
+    let query = req.query
+    let {priceGreaterThan, priceLessThan} = query
 
-// let data = {}
-// if(size && name){
-//   data= await productModel.find({title:name, availableSizes: size},{isDeleted:false})
-// }else if(name){
-//   data= await productModel.find({title:name},{isDeleted:false})
-// }else if(size){
-//   data= await productModel.find({availableSizes: size},{isDeleted:false})
-// }
 
-return res.status(200).send({ status: false, message: foundData });
-  } catch (error) {
-    res.status(500).send({ status: false, message: error.message });
-  }
+    if (query.size) {
+        let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"]
+        let size2 = query.size.split(",").map((x) => x.trim().toUpperCase())
+        for (let i = 0; i < size2.length; i++) {
+            if (!(sizes.includes(size2[i]))) {
+                return res.status(400).send({ status: false, message: "Sizes should one of these - 'S', 'XS', 'M', 'X', 'L', 'XXL' and 'XL'" })
+            }
+        }
+        query.availableSizes = { $in: size2 }
+    }
+
+    if (query.name) {
+      if (!valid.isValid(query.name)) return res.status(400).send({ status: false, message: "name should be in string & not empty" })
+      query.title = { $regex: query.name, $options: 'i' }
+    }
+    let greate = {}
+    let less = {}
+    let gOl = {}
+    if(priceGreaterThan && priceLessThan){
+      if (!valid.isValidNo(priceGreaterThan))  return res.status(400).send({ status: false, message: "priceGreaterThan should be in valid number/decimal format" })
+      if (!valid.isValidNo(priceLessThan))  return res.status(400).send({ status: false, message: "priceLessThan should be in valid number/decimal format" })
+      gOl["price"] = {$gte: parseInt(priceGreaterThan), $lte: parseInt(priceLessThan)}
+    }
+    console.log(gOl);
+  
+    if (query.priceLessThan) {
+        less['price'] = { $lt: parseInt(query['priceLessThan']) }
+    }
+    console.log(less);
+    if (query.priceGreaterThan) {
+      greate['price'] = { $gt: parseInt(query['priceGreaterThan']) }
+    }
+    console.log(greate);
+
+    let allProducts = await productModel.find({ $and: [query, { isDeleted: false }, less, greate,gOl] }).sort({ "price": query['priceSort'] }).select({__v:0})
+    if (allProducts.length == 0) return res.status(404).send({ status: false, message: "no such Product" })
+
+    res.status(200).send({ status: true, message: "Success", data: allProducts })
 }
+catch (error) {
+    console.log(error)
+    res.status(500).send({ status: false, message: error.message })
+}}
 
 // ==========================>  getById   <================================
 
