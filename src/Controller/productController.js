@@ -210,7 +210,7 @@ const productByid = async function (req, res) {
   }
 };
 
-// ======================>  delete by ID  <================================
+// ======================>  delete by ID  <=================================
 
 const updateProduct = async function (req, res) {
   try {
