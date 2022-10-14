@@ -126,7 +126,8 @@ const createProduct = async function (req, res) {
 const getProductByQuery = async function (req, res) {
   try {
     let query = req.query
-    let {priceGreaterThan, priceLessThan} = query
+    let {priceGreaterThan, priceLessThan,priceSort} = query
+    filter = {isDeleted : false}
 
 
     if (query.size) {
@@ -139,7 +140,7 @@ const getProductByQuery = async function (req, res) {
         }
         query.availableSizes = { $in: size2 }
     }
-
+// --------------------------------------> for name & price ordering
     if (query.name) {
       if (!valid.isValid(query.name)) return res.status(400).send({ status: false, message: "name should be in string & not empty" })
       query.title = { $regex: query.name, $options: 'i' }
@@ -150,21 +151,32 @@ const getProductByQuery = async function (req, res) {
     if(priceGreaterThan && priceLessThan){
       if (!valid.isValidNo(priceGreaterThan))  return res.status(400).send({ status: false, message: "priceGreaterThan should be in valid number/decimal format" })
       if (!valid.isValidNo(priceLessThan))  return res.status(400).send({ status: false, message: "priceLessThan should be in valid number/decimal format" })
-      gOl["price"] = {$gte: parseInt(priceGreaterThan), $lte: parseInt(priceLessThan)}
+      gOl["price"] = {$gte: priceGreaterThan, $lte: priceLessThan}
     }
-    console.log(gOl);
   
     if (query.priceLessThan) {
         less['price'] = { $lt: parseInt(query['priceLessThan']) }
     }
-    console.log(less);
     if (query.priceGreaterThan) {
       greate['price'] = { $gt: parseInt(query['priceGreaterThan']) }
     }
-    console.log(greate);
 
-    let allProducts = await productModel.find({ $and: [query, { isDeleted: false }, less, greate,gOl] }).sort({ "price": query['priceSort'] }).select({__v:0})
-    if (allProducts.length == 0) return res.status(404).send({ status: false, message: "no such Product" })
+    let allProducts = await productModel.find({ $and: [query, { isDeleted: false }, less, greate,gOl] }).select({__v:0})
+
+// ------------------------>   for Sorting
+      if(priceSort)  
+      if(priceSort == 1) {
+        allProducts.sort((a,b) => {
+              return a.price - b.price
+          })
+      }
+      else if(priceSort == -1) {
+        allProducts.sort((a,b) => {
+              return b.price - a.price
+          })
+      }
+      else return res.status(400).send({ status: false, message: "priceSort should be 1 or -1" })
+      if (allProducts.length == 0) return res.status(404).send({ status: false, message: "no such Product" })
 
     res.status(200).send({ status: true, message: "Success", data: allProducts })
 }
