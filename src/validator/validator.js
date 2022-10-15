@@ -11,15 +11,16 @@ const isValid = function (value) {
   if (typeof value === "string" && value.trim().length > 0) return true;
   return false;
 };
-const isValidAddress = function (value) {
-
-  if (typeof value === "object") return true;
-  return false;
+const isValidimage= function (value) {
+  const ext = [".jpg", ".jpeg", ".bmp", ".gif", ".png", ".svg"]
+if((el) => value.endsWith(el))return true
+return false
 };
 const isValidNo = function (value) {
   if (/[0-9]$/.test(value)) return true;
   return false;
 };
+
 
 const isValidMobile = function (value) {
   if (typeof value === "string" && /^[0-9]\d{9}$/gi.test(value)) return true;
@@ -72,4 +73,4 @@ const isValidPrice = (price) => {
 
 
 module.exports = { isValid, isValidRequestBody, isValidObjectId, isValidEmail, isValidPassword,
- isValidName, isValidMobile, isValidpin,isValidAddress, isValidString, isValidPrice,isValidNo};
+ isValidName, isValidMobile, isValidpin,isValidimage, isValidString, isValidPrice,isValidNo};

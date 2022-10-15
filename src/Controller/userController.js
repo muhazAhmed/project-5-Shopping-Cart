@@ -9,6 +9,12 @@ const createUser = async function (req, res) {
     let data = req.body;
     let { fname,lname,email,phone,password,address} = data;
     let files= req.files
+    console.log(files)
+      let validImage=files[0].mimetype.split('/')
+  //  console.log(validImage)
+              if(validImage[0]!="image"){
+              return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
+    if(!valid.isValidimage(files)){return res.status(400).send({ status: false, message: "please provide profile Image in jpg,png,jpeg format" })}
     if(files && files.length>0){
         let uploadedFileURL= await uploadFile(files[0])
         data.profileImage=uploadedFileURL
@@ -54,10 +60,14 @@ const salt = await bcrypt.genSalt(10)
 data.password = await bcrypt.hash(data.password, salt)
 //--address--//
 
-if (!valid.isValidAddress(address)) {return res.status(400).send({ status: false,
-msg: "address required ", });}
+console.log(address)
 
-if (!valid.isValidAddress(address.shipping)) {return res.status(400).send({ status: false,
+if (!(address)) {return res.status(400).send({ status: false,
+msg: "address required ", });}
+if(typeof address=="string")
+{address=JSON.parse(address)}
+ 
+if (!(address.shipping)) {return res.status(400).send({ status: false,
 msg: "shipping address is required ", });}
 if (!valid.isValid(address["shipping"]["street"])) { return res.status(400).send({ status: false, msg: "provid street address" });
 }
@@ -68,7 +78,7 @@ if (!valid.isValid(address["shipping"]["city"])) { return res .status(400) .send
 if (!valid.isValidpin(address.shipping.pincode)) {return res.status(400).send({ status: false, msg: " pincode is required & must have 6 digits only" });
 }
 
-if (!valid.isValidAddress(address.billing)) {return res.status(400).send({ status: false,
+if (!(address.billing)) {return res.status(400).send({ status: false,
 msg: "billing address is required ", });}
 
 if (!valid.isValid(address.billing.street)) { return res.status(400).send({ status: false, msg: "provid street address" });
@@ -79,7 +89,7 @@ if (!valid.isValid(address.billing.city)) { return res .status(400) .send({ stat
 
 if (!valid.isValidpin(address.billing.pincode)) {return res.status(400).send({ status: false, msg: " pincode must have 6 digits only" });
 }
-
+data.address=address
 let savedData = await userModel.create(data);
 res.status(201).send({ status: true, message: "success", data:savedData});
 }catch (error) {
@@ -155,6 +165,8 @@ let updateUser = async (req, res) => {
         let { lname, fname, password, address, phone, email} = req.body
         let UserId = req.params.userId
         let files = req.files
+      
+
         if (!valid.isValidRequestBody(req.body)) {
             return res.status(400).send({ status: false, message: "Provide details to Update" })
         }
@@ -163,6 +175,9 @@ let updateUser = async (req, res) => {
         if (files && files.length > 0) {
 
             let uploadedFileURL = await uploadFile(files[0])
+            let validImage=files.mimetype.split('/')
+            if(validImage[0]!="image"){
+            return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
             updateData.profileImage = uploadedFileURL
         }
         
@@ -213,6 +228,10 @@ let updateUser = async (req, res) => {
            updateData.password = await bcrypt.hash(password, salt)
         }
         if (address) {
+        
+          if(typeof address=="string")
+          {address=JSON.parse(address)}
+
           if(address.shipping)
             {
             if(address["shipping"]["street"]){
@@ -239,6 +258,7 @@ let updateUser = async (req, res) => {
         {if (!valid.isValid(address.billing.street)) { return res.status(400).send({ status: false, msg: "provid street address" });
         }
         updateData["address.billing.street"]=address.billing.street
+  //      console.log(typeof address.billing.street)
 
     }
         if(address["billing"]["city"])

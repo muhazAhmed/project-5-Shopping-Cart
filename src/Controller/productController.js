@@ -1,7 +1,7 @@
 const productModel = require("../model/productModel");
 const valid = require("../validator/validator");
 const {uploadFile}=require("../aws/aws");
-const { Query } = require("mongoose");
+//const { Query } = require("mongoose");
 
 
 const titleRegex = /^[a-zA-Z ]{2,45}$/;
@@ -107,6 +107,9 @@ const createProduct = async function (req, res) {
       isFreeShipping = isFreeShipping.toLowerCase();
       if(files && files.length>0){
         let uploadedFileURL= await uploadFile(files[0])
+        let validImage=files.mimetype.split('/')
+        if(validImage[0]!="image"){
+        return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
         data.productImage=uploadedFileURL
     }
     else{
@@ -297,30 +300,6 @@ const updateProduct = async function (req, res) {
           });
       updatedata.price = price;
     }
-
-    // if (currencyId || typeof currencyId == "string") {
-    //   if (!/INR/.test(currencyId))
-    //     return res
-    //       .status(400)
-    //       .send({
-    //         status: false,
-    //         message:
-    //           "Currency Id of product should be in uppercase 'INR' format",
-    //       });
-    //   updatedata.currencyId = currencyId;
-    // }
-
-    // if (currencyFormat || typeof currencyFormat == "string") {
-    //   if (!/₹/.test(currencyFormat))
-    //     return res
-    //       .status(400)
-    //       .send({
-    //         status: false,
-    //         message: "Currency format/symbol of product should be in '₹' ",
-    //       });
-    //   updatedata.currencyFormat = currencyFormat;
-    // }
-
     if (style) {
       if (!valid.isValidString(style))
         return res
