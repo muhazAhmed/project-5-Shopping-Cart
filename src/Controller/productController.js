@@ -4,9 +4,6 @@ const {uploadFile}=require("../aws/aws");
 //const { Query } = require("mongoose");
 
 
-const titleRegex = /^[a-zA-Z ]{2,45}$/;
-
-
 const createProduct = async function (req, res) {
   try {
     let data = req.body;
@@ -33,7 +30,7 @@ const createProduct = async function (req, res) {
         return res
           .status(400)
           .send({ status: false, message: "Title is required." });
-      if (!titleRegex.test(title))
+      if (!valid.isValidString(title))
         return res
           .status(400)
           .send({
@@ -70,25 +67,25 @@ const createProduct = async function (req, res) {
    data.currencyId="INR"
    data.currencyFormat="₹"
 
-
-      if (!valid.isValid(style))
+         if(style)
+      {if (!valid.isValid(style))
         return res
           .status(400)
           .send({
             status: false,
             message: "Style should be valid an does not contain numbers",
           });
-      
-    
-      if (!valid.isValidNo(installments))
+      }
+    if(installments)
+    {  if (!valid.isValidNo(installments))
         return res
           .status(400)
           .send({
             status: false,
             message: "Installments should be in numbers",
-          });
+          });}
 
-      let size1 = ["S", "XS", "M", "X", "L", "XXL", "XL"];
+      let size1 = ["S", "XS", "M", "X", "L", "XXL","XL"];
       let size2 = availableSizes
         .toUpperCase()
         .split(",")
@@ -106,10 +103,11 @@ const createProduct = async function (req, res) {
         data.availableSizes=size2
       isFreeShipping = isFreeShipping.toLowerCase();
       if(files && files.length>0){
-        let uploadedFileURL= await uploadFile(files[0])
-        let validImage=files.mimetype.split('/')
+        let validImage=files[0].mimetype.split('/')
         if(validImage[0]!="image"){
-        return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
+       return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
+        let uploadedFileURL= await uploadFile(files[0])
+    
         data.productImage=uploadedFileURL
     }
     else{
@@ -213,7 +211,7 @@ const productByid = async function (req, res) {
   }
 };
 
-// ======================>  delete by ID  <=================================
+// ======================>  update by ID  <=================================
 
 const updateProduct = async function (req, res) {
   try {
@@ -242,10 +240,10 @@ const updateProduct = async function (req, res) {
         .status(404)
         .send({ status: false, message: "product is already deleted" });
 
-    if (!(Object.keys(data).length || files))
-      return res
-        .status(400)
-        .send({ status: false, message: "please provide data to update" });
+    // if (!(Object.keys(data).length || files))
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: "please provide data to update" });
 
     let {
       title,
@@ -266,7 +264,7 @@ const updateProduct = async function (req, res) {
         return res
           .status(400)
           .send({ status: false, message: "Title is required." });
-      if (!titleRegex.test(title))
+      if (!valid.isvalid(title))
         return res
           .status(400)
           .send({
@@ -282,7 +280,7 @@ const updateProduct = async function (req, res) {
       updatedata.title = title;
     }
 
-    if (description || typeof description == "string") {
+    if (description ) {
       if (!valid.isValid(description))
         return res
           .status(400)
@@ -340,18 +338,8 @@ const updateProduct = async function (req, res) {
       }
     }
 
-    if (isFreeShipping || isFreeShipping == "") {
+    if (isFreeShipping ) {
       isFreeShipping = isFreeShipping.toLowerCase();
-      if (isFreeShipping == "true" || isFreeShipping == "false") {
-        isFreeShipping = JSON.parse(isFreeShipping);
-      } else {
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "Enter a valid value for isFreeShipping",
-          });
-      }
       if (typeof isFreeShipping != "boolean") {
         return res
           .status(400)
@@ -363,22 +351,13 @@ const updateProduct = async function (req, res) {
       updatedata.isFreeShipping = isFreeShipping;
     }
 
-    if (files == [])
-      return res
-        .status(400)
-        .send({ status: false, message: "provide image in files" });
-
     if (files && files.length > 0) {
+      let validImage=files[0].mimetype.split('/')
+      if(validImage[0]!="image"){
+     return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
       let uploadedFileURL = await uploadFile(files[0]);
       updatedata.productImage = uploadedFileURL;
-      if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i.test(updatedata.productImage))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message:
-              "Please provide profileImage in correct format like jpeg,png,jpg,gif,bmp etc",
-          });
+          
     }
 
     let updateData = await productModel
@@ -420,8 +399,7 @@ const deleteByid = async function (req, res) {
 
     let deleteProduct = await productModel.findOneAndUpdate(
       { _id: productId },
-      { $set: { isDeleted: true, deletedAt: new Date()}},
-      { new: true }
+       { isDeleted: true, deletedAt: new Date()}
     );
     res
       .status(200)

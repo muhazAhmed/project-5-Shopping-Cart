@@ -9,13 +9,10 @@ const createUser = async function (req, res) {
     let data = req.body;
     let { fname,lname,email,phone,password,address} = data;
     let files= req.files
-    console.log(files)
-      let validImage=files[0].mimetype.split('/')
-  //  console.log(validImage)
-              if(validImage[0]!="image"){
-              return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
-    if(!valid.isValidimage(files)){return res.status(400).send({ status: false, message: "please provide profile Image in jpg,png,jpeg format" })}
     if(files && files.length>0){
+        let validImage=files[0].mimetype.split('/')
+        if(validImage[0]!="image"){
+       return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
         let uploadedFileURL= await uploadFile(files[0])
         data.profileImage=uploadedFileURL
     }
@@ -59,8 +56,6 @@ msg: "Your password must contain at least one alphabet one number minimum 8chara
 const salt = await bcrypt.genSalt(10)
 data.password = await bcrypt.hash(data.password, salt)
 //--address--//
-
-console.log(address)
 
 if (!(address)) {return res.status(400).send({ status: false,
 msg: "address required ", });}
@@ -166,18 +161,17 @@ let updateUser = async (req, res) => {
         let UserId = req.params.userId
         let files = req.files
       
-
         if (!valid.isValidRequestBody(req.body)) {
             return res.status(400).send({ status: false, message: "Provide details to Update" })
         }
         let updateData={}
 
         if (files && files.length > 0) {
-
-            let uploadedFileURL = await uploadFile(files[0])
-            let validImage=files.mimetype.split('/')
+            let validImage=files[0].mimetype.split('/')
             if(validImage[0]!="image"){
-            return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
+           return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
+            let uploadedFileURL = await uploadFile(files[0])
+
             updateData.profileImage = uploadedFileURL
         }
         
