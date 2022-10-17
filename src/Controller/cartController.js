@@ -2,6 +2,7 @@ const cartModel = require("../model/cartModel");
 const userModel = require("../model/userModel");
 const productModel = require("../model/productModel");
 const { count } = require("../model/productModel");
+const validator = require("../validator/validator")
 
 const createCart = async (req, res) => {
   try {
@@ -90,4 +91,60 @@ const createCart = async (req, res) => {
   }
 };
 
-module.exports.createCart = createCart;
+// ==========================> Get Cart <====================================
+const getCart = async (req,res) =>{
+    try {
+        let userId = req.params.userId
+        if(!validator.isValid){
+            return res.status(400).send({status : false, message : "provide userId"})
+        }
+        let user = await userModel.findOne({_id : userId})
+        if(!user){
+            return res.status(404).send({ status : false, message : "user not found"})
+        }
+        
+        let cart = await cartModel.findOne({userId})
+        if(!cart){
+            return res.status(404).send({ status : false, message : "cart not found"})
+        }
+        return res.status(200).send({status : true, message : "Success", data : cart})
+        
+    } catch (error) {
+        return res.status(500).send({ status : false, message : error.message})
+        
+    }
+}
+// ==========================> Delete Cart <====================================
+const deleteCart = async function (req, res) { 
+    try {
+        const userId = req.params.userId;
+        if (!validator.isValid(userId))
+            return res
+                .status(400)
+                .send({ status: false, message: "User Id is Not Valid" });
+
+        let userData = await userModel.findOne({
+            _id: userId,
+            isDeleted: false,
+        });
+        if (!userData) {
+            return res.status(404).send({ status: false, msg: "No User Found" });
+        }
+
+        let userCart = await cartModel.findOne({ userId})
+        if(!userCart){
+            return res
+                .status(400)
+                .send({ status: false, message: "no such cart for this user" });
+        }
+
+        let deleteCart = await cartModel.findOneAndUpdate({ userId:userId }, { items: [], totalPrice: 0, totalItems: 0}, {new: true})
+
+        return res.status(200).send({ status: true, message: "Cart Deleted Successfully", data: deleteCart })
+    } catch (error) {
+        res.status(500).send({ status: false, err: error.message });
+    }
+ }
+
+
+module.exports = {createCart,getCart,deleteCart};
