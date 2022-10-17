@@ -11,22 +11,26 @@ const createCart = async function (req, res) {
     if (userData) {
         saveItems.userId = userId
         const productData = await productModel.findOne({ _id: productId })
+        const cartData = await cartModel.findOne({userId: userId});
         if (productData) {
             const checkProduct = await cartModel.findOne({ "items.productId": productId }, { items: { $elemMatch: { productId } } })
 
             if (checkProduct) {
                 saveItems.totalPrice = userData.totalPrice + productData.price * quantity
                 saveItems.totalItems = userData.totalItems
-                saveItems.items.push({ productId: productId, quantity: checkProduct.items[0].quantity + quantity })
+                cartData.items.push({ productId: productId, quantity: checkProduct.items[0].quantity + quantity })
+                saveItems.items = [...cartData.items]
+                // saveItems.items.push({ productId: productId, quantity: checkProduct.items[0].quantity + quantity })
             } else {
                 saveItems.totalPrice = userData.totalPrice + productData.price * quantity
                 saveItems.totalItems = userData.totalItems + 1
-                saveItems.items.push({ productId: productId, quantity: quantity })
+                cartData.items.push({ productId: productId, quantity: quantity })
+                saveItems.items = [...cartData.items]
             }
 
         }
         console.log(saveItems);
-        const savedData = await cartModel.findOneAndUpdate({ _id: userId }, saveItems, { new: true })
+        const savedData = await cartModel.findOneAndUpdate({ userId: userId }, saveItems, { new: true })
         return res.status(201).send({ status: true, data: savedData })
         // totalItems = userData.totalItems
     } else {
