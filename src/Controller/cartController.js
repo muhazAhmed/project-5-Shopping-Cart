@@ -92,6 +92,44 @@ const createCart = async (req, res) => {
 };
 
 // ==========================> Get Cart <====================================
+
+const updateCart=async (req,res)=>
+{
+    try {
+        let id = req.params.userId
+        let {productId,cartId,removeProduct}=req.body
+        let existCart= await cartModel.findById(cartId)
+        if(!existCart){
+          return  res.send("no cart found")
+        }
+       
+      let pd= await productModel.findById(productId)
+ 
+        let l=items.length
+       for(let i=0;i<l;i++){
+      if(existCart.items[i].productId.toString()==pd._id.toString()){
+        if(removeProduct==1){
+         existCart.items[i].quantity--
+        existCart.totalPrice=existCart.totalPrice-(1*pd.price)
+        }else{
+          let up={}
+         up.items= existCart.items.filter((x)=>x.productId!=req.body.productId)
+         up.totalPrice=existCart.totalPrice-existCart.items[i].quantity*pd.price
+         up.totalItems=existCart.totalItems-1
+      let removedProduct=await cartModel.findByIdAndUpdate(cartId,up,{new:true})
+      return res.send(removedProduct)
+      }
+    }}
+      let xyz=await cartModel.findByIdAndUpdate(cartId,existCart,{new:true})
+      return res.send(xyz)
+
+        
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message });
+
+    }
+}
+// ==========================> Get Cart <====================================
 const getCart = async (req,res) =>{
     try {
         let userId = req.params.userId
@@ -147,4 +185,5 @@ const deleteCart = async function (req, res) {
  }
 
 
-module.exports = {createCart,getCart,deleteCart};
+
+module.exports = {createCart,updateCart,getCart,deleteCart};
