@@ -3,6 +3,7 @@ const router = express.Router()
 const userController= require("../controller/userController")
 const productController= require("../controller/productController")
 const cartController = require ("../Controller/cartController")
+const orderController = require ("../Controller/orderController")
 const{authentication,authorization}=require("../middleware/auth")
 
 
@@ -24,8 +25,9 @@ router.put("/users/:userId/cart", authentication,authorization,cartController.up
 router.get("/users/:userId/cart", authentication,authorization,cartController.getCart)
 router.delete("/users/:userId/cart", authentication,authorization,cartController.deleteCart)
 
-
-
+// =======================> for order <========================
+router.post("/users/:userId/orders",authentication,orderController.createOrder)
+router.put("/users/:userId/orders",authentication, orderController.updateOrder)
 
 router.all("/*", (req, res) => 
 { res.status(400).send({ status: false, message: "Endpoint is not correct" }) })
