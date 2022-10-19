@@ -9,7 +9,7 @@ const createUser = async function (req, res) {
     let data = req.body;
     let { fname,lname,email,phone,password,address} = data;
     let files= req.files
-    if(files && files.length>0){
+    if(files.length>0){
         let validImage=files[0].mimetype.split('/')
         if(validImage[0]!="image"){
        return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
@@ -59,8 +59,8 @@ data.password = await bcrypt.hash(data.password, salt)
 
 if (!(address)) {return res.status(400).send({ status: false,
 msg: "address required ", });}
-if(typeof address=="string")
-{address=JSON.parse(address)}
+
+address=JSON.parse(address)
  
 if (!(address.shipping)) {return res.status(400).send({ status: false,
 msg: "shipping address is required ", });}
@@ -166,7 +166,7 @@ let updateUser = async (req, res) => {
         }
         let updateData={}
 
-        if (files && files.length > 0) {
+        if ( files.length > 0) {
             let validImage=files[0].mimetype.split('/')
             if(validImage[0]!="image"){
            return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
@@ -223,8 +223,7 @@ let updateUser = async (req, res) => {
         }
         if (address) {
         
-          if(typeof address=="string")
-          {address=JSON.parse(address)}
+          address=JSON.parse(address)
 
           if(address.shipping)
             {

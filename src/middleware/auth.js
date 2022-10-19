@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const userModel = require("../model/userModel");
 const valid = require ("../validator/validator")
 
 const authentication = (req, res, next) => {
@@ -29,6 +30,10 @@ const authorization = async (req,res,next)=>{
         let decodedToken=req.token
         let userid=req.params.userId
         if(!valid.isValidObjectId(userid)){return res.status(400).send({status:false,message:"plz enter valid userId"})}
+        let user=await userModel.findById(userid)
+        if(!user){
+            return res.status(404).send({status:false,message:"user not found"})
+        }
         if(userid!=decodedToken.userId){
             return res.status(403).send({status:false,message:"you are not authorised"})
             

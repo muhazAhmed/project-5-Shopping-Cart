@@ -15,10 +15,8 @@ let uploadFile= async ( file) =>{
         ACL: "public-read",
         Bucket: "classroom-training-bucket",  //HERE
         Key: "abc/" + file.originalname, //HERE
-        mimetype:"image/JPG", 
         Body: file.buffer
     }
-
 
     s3.upload( uploadParams, function (err, data ){
         if(err) {

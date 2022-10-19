@@ -17,7 +17,7 @@ if((el) => value.endsWith(el))return true
 return false
 };
 const isValidNo = function (value) {
-  if (/[0-9]$/.test(value)) return true;
+  if (typeof value === "number" && value.trim().length > 0) return true;
   return false;
 };
 
@@ -62,7 +62,9 @@ const isValidObjectId = function (objectId) {
 const isValidString = (String) => {
   return /^[a-zA-Z ]{2,45}$/.test(String)
 }
-
+function isValidSize(size) {
+  return ["S", "XS", "M", "X", "L", "XXL", "XL"].indexOf(size) !== -1;
+}
 const isValidPrice = (price) => {
   return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price)
 }
@@ -72,4 +74,4 @@ const isValidPrice = (price) => {
 
 
 module.exports = { isValid, isValidRequestBody, isValidObjectId, isValidEmail, isValidPassword,
- isValidName, isValidMobile, isValidpin,isValidimage, isValidString, isValidPrice,isValidNo};
+ isValidName, isValidMobile, isValidpin,isValidimage, isValidString, isValidPrice,isValidNo,isValidSize};
