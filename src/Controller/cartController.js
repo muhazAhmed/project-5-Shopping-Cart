@@ -23,11 +23,17 @@ if(!validator.isValidObjectId(productId)){
 
 }
 
+    if (!validator.isValidObjectId(userId))
+    return res
+    .status(400)
+    .send({ status: false, message: "Invalid userId" });
     if (cartId) {
         if(!validator.isValidObjectId(cartId)){
             return res.status(400).send({ status: false, message: "Enter valid cartId" })
         
         }
+        
+
         let findCart = await cartModel.findOne({ _id: cartId });
         if (!findCart) {
             return res.status(404).send({status:false,msg:"cart not found"});
@@ -55,13 +61,14 @@ if(!validator.isValidObjectId(productId)){
         let productid = validProduct._id.toString();
         for (i = 0; i < productInCart.length; i++) {
             let productIdFromItem = productInCart[i].productId._id;
-            console.log(productIdFromItem)
+
             // to update quantity and total price
         if (productid == productIdFromItem) {
             let oldQuantity = productInCart[i].quantity;
           let newQuantity = oldQuantity + quantity;
           productInCart[i].quantity = Number(newQuantity);
           validCart.totalPrice = Number(updtotal);
+          validCart.totalItems =validCart.items.length;
            validCart.save();
           return res.status(200).send({status:true,data:validCart});
         }
@@ -70,7 +77,7 @@ if(!validator.isValidObjectId(productId)){
       validCart.items.push({ productId, quantity });
       let total = validCart.totalPrice + validProduct.price * quantity;
       validCart.totalPrice = total
-      validCart.totalItems ++;
+      validCart.totalItems =validCart.items.length;
        validCart.save();
       return res.status(200).send({status:true,data:validCart});
     }
@@ -89,7 +96,6 @@ if(!validator.isValidObjectId(productId)){
     };
     obj["totalItems"] = obj.items.length;
     let result = await cartModel.create(obj);
-    console.log(result)
     let popcart= await cartModel.findOne({result}).populate("items.productId")
 
     return res.status(201).send({status:true,msg:"created successfully",data:popcart});
@@ -103,7 +109,7 @@ if(!validator.isValidObjectId(productId)){
 const updateCart=async (req,res)=>
 {
     try {
-        let id = req.params.userId
+        let userId = req.params.userId
         let {productId,cartId,removeProduct}=req.body
         if(!validator.isValidRequestBody(req.body))  {
             return res.status(400).send({ status: false, message: "Enter data" })  
@@ -114,12 +120,19 @@ const updateCart=async (req,res)=>
         if(!validator.isValidObjectId(cartId)){
             return res.status(400).send({ status: false, message: "Enter valid cartId" })  
         }
+        if(!validator.isValidObjectId(userId)){
+            return res.status(400).send({ status: false, message: "Enter valid userid" })  
+        }
                 //removeProduct validations
         if (removeProduct == 0 || removeProduct == 1);
           else return res.status(400).send({ status: false, message: "please  set to 0 to remove product completely from the cart or set removeProduct to 1 to decrease poduct quantity by 1" })
-        let existCart= await cartModel.findById(cartId)
+        let existCart= await cartModel.findById(cartId).populate("items.productId")
+        
         if(!existCart){
-          return  resstatus(404).send({status:false,msg:"no cart found"})
+          return  res.status(404).send({status:false,msg:"no cart found"})
+        }
+        if(existCart.userId != userId ){
+            return res.status(400).send({ status: false, message :"cartId and Userid is not matching"})
         }
        
       let pd= await productModel.findById(productId)
@@ -141,6 +154,7 @@ const updateCart=async (req,res)=>
          up.items= existCart.items.filter((x)=>x.productId!=req.body.productId)
          up.totalPrice=existCart.totalPrice-existCart.items[i].quantity*pd.price
          up.totalItems=existCart.totalItems-1
+
      let removedProduct=await cartModel.findByIdAndUpdate(cartId,up,{new:true})
      return res.status(200).send({status:true,data:removedProduct});
     }
@@ -156,9 +170,9 @@ const updateCart=async (req,res)=>
 const getCart = async (req,res) =>{
     try {
         let userId = req.params.userId
-        if(!validator.isValid){
-            return res.status(400).send({status : false, message : "provide userId"})
-        }
+        if (!validator.isValidObjectId(userId))
+        return res.status(400).send({ status: false, message: "Invalid userId" });
+
         let user = await userModel.findOne({_id : userId})
         if(!user){
             return res.status(404).send({ status : false, message : "user not found"})
@@ -179,6 +193,10 @@ const getCart = async (req,res) =>{
 const deleteCart = async function (req, res) { 
     try {
         const userId = req.params.userId;
+        
+        if(!validator.isValidObjectId(userId)){
+            return res.status(400).send({ status: false, message: "Enter valid userid" })  
+        }
 
         let userData = await userModel.findOne({
             _id: userId,

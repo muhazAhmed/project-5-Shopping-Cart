@@ -18,6 +18,7 @@ const createOrder = async function (req, res) {
         }
        
         let cartCheck = await cartModel.findOne({ _id: cartId, userId: userId })
+
         if (!cartCheck) {
             return res.status(404).send({ status: false, message: "no cart is created for this user " })
         }
@@ -50,7 +51,7 @@ const createOrder = async function (req, res) {
         filter.totalPrice=0
         await cartModel .findOneAndUpdate({_id:cartId},filter,{new:true})
         let oredrCreate = await orderModel.create(order)
-      let populateorder=await orderModel.findOne({oredrCreate}).populate(items.productId)
+      let populateorder=await orderModel.findOne({oredrCreate}).populate("items.productId")
         console.log(populateorder)
         res.status(201).send({ status: true, message: "Success", data: populateorder })
 
@@ -60,6 +61,7 @@ const createOrder = async function (req, res) {
     }
 }
 
+// =========================================> update order  <====================
 const updateOrder = async function (req, res) {
     try {
         let userId = req.params.userId
@@ -105,8 +107,8 @@ const updateOrder = async function (req, res) {
             if (checkOrder.status == "pending") {
                 const updateorderStatus = await orderModel.findOneAndUpdate(
                     { _id: checkOrder._id },
-                    { $set: { status: statusbody } },
-                    { new: true })
+                    { status: statusbody } ,
+                    { new: true }).populate("items.productId")
                 return res.status(200).send({ status: true, message: `Successfully updated the order details.`, data: updateorderStatus })
             }
 
@@ -121,9 +123,9 @@ const updateOrder = async function (req, res) {
                     { new: true })
                 return res.status(200).send({ status: true, message: `Successfully updated the order details.`, data: updateorderStatus })
             }
-
-        } else {
-            return res.status(400).send({ status: false, message: `Cannot cancel the order due to Non-cancellable policy.` })
+            if(statusbody == "cancelled"){
+            return res.status(400).send({ status: false, message: `Cannot cancel the order due to Non-cancellable policy.` })  
+            }
         }
     }
     catch (error) {

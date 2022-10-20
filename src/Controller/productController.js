@@ -143,7 +143,7 @@ const getProductByQuery = async (req,res)=> {
 
       if(size){
         if (!valid.isValidSize(size)) {
-          return res.status(400).send({ status: false, message: "Please provide valid size" });
+          return res.status(400).send({ status: false, message: "Please provide valid size, or please provide in uppercase" });
         }
           //filter.availableSizes = {$regex: size};
           filter.availableSizes=size
@@ -162,9 +162,12 @@ const getProductByQuery = async (req,res)=> {
         }
           filter.price = {$lt: priceLessThan};
       }
-      
-
+      if(priceSort){
+      if(!priceSort ==1 || !priceSort == -1){
+        return res.status(400).send({status : false, message:"priceSort should be either 1 or -1"})
+      }}
       let sortAllValue = await productModel.find(filter).sort({ price: priceSort});
+      
 
       if (!sortAllValue.length > 0) {
           return res.status(404).send({ status: false, message: "No Product found" });
@@ -394,7 +397,7 @@ const deleteByid = async function (req, res) {
     );
     res
       .status(200)
-      .send({ status: true, message: "Success", data: deleteProduct });
+      .send({ status: true, message: "product success deleted" });
 
   } catch (error) {
     console.log(error.message);

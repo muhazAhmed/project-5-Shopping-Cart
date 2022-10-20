@@ -5,10 +5,10 @@ const valid = require ("../validator/validator")
 const authentication = (req, res, next) => {
     try {
         let token = req.headers["authorization"];
-        let btoken=token.split(" ")
-       // console.log(a[1])
         if (!token)
             return res.status(401).send({ status: false, msg: "token is required" });
+        let btoken=token.split(" ")
+       // console.log(a[1])
         jwt.verify(btoken[1],"project-pltm", (error, decoded) =>{
          //  console.log(decoded)
             if (error) {

@@ -9,6 +9,7 @@ const createUser = async function (req, res) {
     let data = req.body;
     let { fname,lname,email,phone,password,address} = data;
     let files= req.files
+
     if(files.length>0){
         let validImage=files[0].mimetype.split('/')
         if(validImage[0]!="image"){
@@ -36,37 +37,41 @@ const createUser = async function (req, res) {
     if (!valid.isValidName(lname)) { return res.status(400).send({status: false,
             msg: " last Name's first character must be capital...!",
             });}
+
     //--email--//
-if(!valid.isValid(email)){return res.status(400).send({ status: false, message: "email is required" })}
-if(!valid.isValidEmail(email)){return res.status(400).send({ status: false, message: "emailId is required and must be unique and must be in valid format =>example@gmail.com...!" })}
-const dublicateEmail = await userModel.findOne({ email: email });
-if (dublicateEmail) { return res.status(400).send({  status: false,
+    if(!valid.isValid(email)){return res.status(400).send({ status: false, message: "email is required" })}
+    if(!valid.isValidEmail(email)){return res.status(400).send({ status: false, message: "emailId is required and must be unique and must be in valid format =>example@gmail.com...!" })}
+
+    const dublicateEmail = await userModel.findOne({ email: email });
+    if (dublicateEmail) { return res.status(400).send({  status: false,
     msg: " Email Already Present", });}
+
     //--phone--//  
     if(!valid.isValid(phone)){return res.status(400).send({ status: false, message: "phone is required" })}
     if(!valid.isValidMobile(phone)){return res.status(400).send({ status: false, message: " only 10 character " })}
+
     const dublicatePhone = await userModel.findOne({ phone: phone });
     if (dublicatePhone) {return res.status(400).send({ status: false, msg: "phone must be unique...!",});}
+
     //--password--//
     if(!valid.isValid(password)){return res.status(400).send({ status: false, message: "password is required" })}
-if (!valid.isValidPassword(password)) {return res.status(400).send({status: false,
-msg: "Your password must contain at least one alphabet one number minimum 8character maximum 15",
+    if (!valid.isValidPassword(password)) {return res.status(400).send({status: false,
+    msg: "Your password must contain at least one alphabet one number minimum 8character maximum 15",
     });
-}
-const salt = await bcrypt.genSalt(10)
-data.password = await bcrypt.hash(data.password, salt)
+    }
+    const salt = await bcrypt.genSalt(10)
+    data.password = await bcrypt.hash(data.password, salt)
+    
 //--address--//
 
 if (!(address)) {return res.status(400).send({ status: false,
 msg: "address required ", });}
-// address=JSON.stringify(address)
-console.log( address)
-// if(!address.hasOwnProperty(address.shipping)){
-//     return res.status(400).send({ status: false,
-//         msg: "shipping address is required ", })
-// }
+
+try{
 address=JSON.parse(address)
-console.log(address)
+}catch{
+    return res.status(400).send({ status : false, message : "provide valid address"})
+}
 
 if (!(address.shipping)) {return res.status(400).send({ status: false,
 msg: "shipping address is required ", });}
@@ -127,7 +132,7 @@ const loginUser = async function (req, res) {
             userId: getUser._id.toString(),
             batch: "Plutonium",
           },
-          "project-pltm"
+          "project-pltm", {expiresIn : "1h"}
         );
       return res
         .status(200)
@@ -229,7 +234,11 @@ let updateUser = async (req, res) => {
         }
         if (address) {
         
-          address=JSON.parse(address)
+            try{
+                address=JSON.parse(address)
+                }catch{
+                    return res.status(400).send({ status : false, message : "provide valid address"})
+                }
 
           if(address.shipping)
             {
