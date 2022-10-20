@@ -59,9 +59,15 @@ data.password = await bcrypt.hash(data.password, salt)
 
 if (!(address)) {return res.status(400).send({ status: false,
 msg: "address required ", });}
-
+// address=JSON.stringify(address)
+console.log( address)
+// if(!address.hasOwnProperty(address.shipping)){
+//     return res.status(400).send({ status: false,
+//         msg: "shipping address is required ", })
+// }
 address=JSON.parse(address)
- 
+console.log(address)
+
 if (!(address.shipping)) {return res.status(400).send({ status: false,
 msg: "shipping address is required ", });}
 if (!valid.isValid(address["shipping"]["street"])) { return res.status(400).send({ status: false, msg: "provid street address" });

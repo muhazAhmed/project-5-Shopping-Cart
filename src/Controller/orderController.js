@@ -6,20 +6,17 @@ const valid = require("../validator/validator");
 const createOrder = async function (req, res) {
     try {
         let userId = req.params.userId.trim()
-        let data = req.body
-        let { cartId, cancellable } = data
+        let { cartId, cancellable } = req.body
+        if(!valid.isValidRequestBody(req.body))  {
+            return res.status(400).send({ status: false, message: "Enter data" })  
+        }
         if (!valid.isValidObjectId(userId)) return res.status(400).send({ status: false, message: 'Please provide valid userId' })
-
+        if (!valid.isValidObjectId(cartId)) return res.status(400).send({ status: false, message: 'Please provide valid userId' })
         let userCheck = await userModel.findOne({ _id: userId })
         if (!userCheck) {
             return res.status(404).send({ status: false, message: "user id doesn't exist" })
         }
-
-        if (!cartId) {
-            return res.status(400).send({ status: false, message: "please provide cartId" })
-        }
-        if (!valid.isValidObjectId(cartId)) return res.status(400).send({ status: false, message: 'Please provide valid cartId' })
-
+       
         let cartCheck = await cartModel.findOne({ _id: cartId, userId: userId })
         if (!cartCheck) {
             return res.status(404).send({ status: false, message: "no cart is created for this user " })
@@ -47,9 +44,15 @@ const createOrder = async function (req, res) {
             }
         }
         order.cancellable = cancellable
-
+     let filter={}
+        filter.items=[]
+        filter.totalItems=0
+        filter.totalPrice=0
+        await cartModel .findOneAndUpdate({_id:cartId},filter,{new:true})
         let oredrCreate = await orderModel.create(order)
-        res.status(201).send({ status: true, message: "Success", data: oredrCreate })
+      let populateorder=await orderModel.findOne({oredrCreate}).populate(items.productId)
+        console.log(populateorder)
+        res.status(201).send({ status: true, message: "Success", data: populateorder })
 
     } catch (error) {
         console.log(error)
@@ -62,7 +65,9 @@ const updateOrder = async function (req, res) {
         let userId = req.params.userId
         let orderId = req.body.orderId
         let statusbody = req.body.status
-
+        if(!valid.isValidRequestBody(req.body))  {
+            return res.status(400).send({ status: false, message: "Enter data" })  
+        }
         if (!valid.isValidObjectId(userId)) return res.status(400).send({ status: false, message: 'Please provide valid userId' })
         let userCheck = await userModel.findOne({ _id: userId })
         if (!userCheck) {
@@ -81,14 +86,14 @@ const updateOrder = async function (req, res) {
             return res.status(404).send({ status: false, message: `order is not for ${userId}, you cannot order it` })
         }
 
-        if (statusbody) {
-            if (!(['completed', 'cancelled'].includes(statusbody))) {
+       if(!statusbody){
+        return res.status(400).send({ status: false, message: "status is required" })
+     }
+        if (!(['completed', 'cancelled'].includes(statusbody))) {
                 return res.status(400).send({ status: false, message: `Status must be among ['completed','cancelled'].`, });
             }
-        }
-
+        
         if (checkOrder.cancellable == true) {
-
             if (checkOrder.status == statusbody) {
                 return res.status(200).send({ status: false, message: `Order status is alreday ${statusbody}` })
             }
