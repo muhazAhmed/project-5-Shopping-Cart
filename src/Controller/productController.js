@@ -37,9 +37,9 @@ const createProduct = async function (req, res) {
             message: " Please provide valid title including characters only.",
           });
 
-      let checkTitle = await productModel.findOne({ title: data.title });
-      if (checkTitle)
-        return res
+          let checkTitle = await productModel.findOne({ title: data.title });
+          if (checkTitle)
+          return res
           .status(400)
           .send({ status: false, message: "Title already exist" });
   
@@ -54,29 +54,63 @@ const createProduct = async function (req, res) {
         .status(400)
         .send({
           status: false,
-          message: "price Should be in number only...!",
+          message: "price required...!",
         });
       if (! valid.isValidPrice(price))
         return res
-          .status(400)
-          .send({
-            status: false,
-            message: "price Should be in number only...!",
-          });
-   data.currencyId="INR"
-   data.currencyFormat="₹"
+        .status(400)
+        .send({
+          status: false,
+          message: "price Should be in number only...!",
+        });
+        data.currencyId="INR"
+        data.currencyFormat="₹"
 
          if(style)
       {if (!valid.isValid(style))
         return res
-          .status(400)
-          .send({
-            status: false,
-            message: "Style should be valid an does not contain numbers",
-          });
+        .status(400)
+        .send({
+          status: false,
+          message: "Style should be valid an does not contain numbers",
+        });
       }
+      if(!availableSizes){
+        return res.status (400).send({status:false, message:"provide any size"})
+      }
+      let size1 = ["S", "XS", "M", "X", "L", "XXL","XL"];
+      let size2 = availableSizes
+      .toUpperCase()
+      .split(",")
+      .map((x) => x.trim());
+      for (let i = 0; i < size2.length; i++) {
+        if (!size1.includes(size2[i])) {
+          return res.status(400)
+            .send({
+              status: false,
+              message:
+              "Sizes should one of these - 'S', 'XS', 'M', 'X', 'L', 'XXL' and 'XL'",
+            });
+          }
+        }
+        data.availableSizes=size2
+        isFreeShipping = isFreeShipping.toLowerCase();
+        if( files.length>0){
+          let validImage=files[0].mimetype.split('/')
+          if(validImage[0]!="image"){
+          return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
+          let uploadedFileURL= await uploadFile(files[0])
+    
+          data.productImage=uploadedFileURL
+    }
+    else{
+      return res.status(400).send({ msg: "No file found" })
+    }
     if(installments)
-    {  if (!valid.isValidNo(installments))
+    
+    { 
+      if (!valid.isValidNumber(installments))
+      
         return res
           .status(400)
           .send({
@@ -84,35 +118,7 @@ const createProduct = async function (req, res) {
             message: "Installments should be in numbers",
           });}
 
-      let size1 = ["S", "XS", "M", "X", "L", "XXL","XL"];
-      let size2 = availableSizes
-        .toUpperCase()
-        .split(",")
-        .map((x) => x.trim());
-      for (let i = 0; i < size2.length; i++) {
-        if (!size1.includes(size2[i])) {
-          return res.status(400)
-            .send({
-              status: false,
-              message:
-                "Sizes should one of these - 'S', 'XS', 'M', 'X', 'L', 'XXL' and 'XL'",
-            });
-          }
-        }
-        data.availableSizes=size2
-      isFreeShipping = isFreeShipping.toLowerCase();
-      if( files.length>0){
-        let validImage=files[0].mimetype.split('/')
-        if(validImage[0]!="image"){
-       return res.status(400).send({ status: false, message: "Please Provide Valid Image.." })}
-        let uploadedFileURL= await uploadFile(files[0])
     
-        data.productImage=uploadedFileURL
-    }
-    else{
-        return res.status(400).send({ msg: "No file found" })
-    }
-      
     let saveData = await productModel .create(data)
     
     res.status(200).send({ status: true, data: saveData });

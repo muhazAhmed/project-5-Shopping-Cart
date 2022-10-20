@@ -17,7 +17,7 @@ if((el) => value.endsWith(el))return true
 return false
 };
 const isValidNo = function (value) {
-  if (typeof value === "number" && value.trim().length > 0) return true;
+  if (typeof value === "number" ) return true;
   return false;
 };
 
@@ -68,10 +68,13 @@ function isValidSize(size) {
 const isValidPrice = (price) => {
   return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price)
 }
+const isValidNumber = (price) => {
+  return /^[0-9]$/.test(price)
+}
 // const isValidObjectId = function (ObjectId) {
 //   return mongoose.Types.ObjectId.isValid(ObjectId);
 // }
 
 
 module.exports = { isValid, isValidRequestBody, isValidObjectId, isValidEmail, isValidPassword,
- isValidName, isValidMobile, isValidpin,isValidimage, isValidString, isValidPrice,isValidNo,isValidSize};
+ isValidName, isValidMobile, isValidpin,isValidimage, isValidString, isValidPrice,isValidNo,isValidSize, isValidNumber};

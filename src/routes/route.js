@@ -27,7 +27,7 @@ router.delete("/users/:userId/cart", authentication,authorization,cartController
 
 // =======================> for order <========================
 router.post("/users/:userId/orders",authentication,orderController.createOrder)
-router.put("/users/:userId/orders",authentication, orderController.updateOrder)
+router.put("/users/:userId/orders", orderController.updateOrder)
 
 router.all("/*", (req, res) => 
 { res.status(400).send({ status: false, message: "Endpoint is not correct" }) })
