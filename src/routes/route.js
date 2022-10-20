@@ -20,14 +20,14 @@ router.delete("/products/:productId",productController.deleteByid )
 router.put("/products/:productId",productController.updateProduct )
 
 // =======================> for cart <========================
-router.post("/users/:userId/cart", authentication,authorization,cartController.createCart)
+router.post("/users/:userId/cart",cartController.createCart)
 router.put("/users/:userId/cart", authentication,authorization,cartController.updateCart)
 router.get("/users/:userId/cart", authentication,authorization,cartController.getCart)
 router.delete("/users/:userId/cart", authentication,authorization,cartController.deleteCart)
 
 // =======================> for order <========================
 router.post("/users/:userId/orders",authentication,orderController.createOrder)
-router.put("/users/:userId/orders", orderController.updateOrder)
+router.put("/users/:userId/orders",authentication, orderController.updateOrder)
 
 router.all("/*", (req, res) => 
 { res.status(400).send({ status: false, message: "Endpoint is not correct" }) })

@@ -22,11 +22,12 @@ if(!validator.isValidObjectId(productId)){
     return res.status(400).send({ status: false, message: "Enter valid productId" })
 
 }
-if(!validator.isValidObjectId(cartId)){
-    return res.status(400).send({ status: false, message: "Enter valid cartId" })
 
-}
     if (cartId) {
+        if(!validator.isValidObjectId(cartId)){
+            return res.status(400).send({ status: false, message: "Enter valid cartId" })
+        
+        }
         let findCart = await cartModel.findOne({ _id: cartId });
         if (!findCart) {
             return res.status(404).send({status:false,msg:"cart not found"});
@@ -41,10 +42,9 @@ if(!validator.isValidObjectId(cartId)){
         return res.status(404).send({status:false,msg:"product not found"});
     }
     
-    validCart = await cartModel.findOne( {userId : userId} );
+   let validCart = await cartModel.findOne( {userId : userId} ).populate("items.productId")
     
     if (validCart) {
-        // console.log(object);
         if (cartId) {
             if (validCart._id.toString() != cartId) {
                 return res.status(400).send({status:false,msg:"cart is not belong to you"});
@@ -54,8 +54,8 @@ if(!validator.isValidObjectId(cartId)){
         let updtotal =validCart.totalPrice + validProduct.price * quantity;
         let productid = validProduct._id.toString();
         for (i = 0; i < productInCart.length; i++) {
-            let productIdFromItem = productInCart[i].productId.toString();
-            
+            let productIdFromItem = productInCart[i].productId._id;
+            console.log(productIdFromItem)
             // to update quantity and total price
         if (productid == productIdFromItem) {
             let oldQuantity = productInCart[i].quantity;
@@ -65,7 +65,7 @@ if(!validator.isValidObjectId(cartId)){
            validCart.save();
           return res.status(200).send({status:true,data:validCart});
         }
-      }
+     }
       // to add new product into cart
       validCart.items.push({ productId, quantity });
       let total = validCart.totalPrice + validProduct.price * quantity;
@@ -89,7 +89,10 @@ if(!validator.isValidObjectId(cartId)){
     };
     obj["totalItems"] = obj.items.length;
     let result = await cartModel.create(obj);
-    return res.status(201).send({status:true,msg:"created successfully",data:result});
+    console.log(result)
+    let popcart= await cartModel.findOne({result}).populate("items.productId")
+
+    return res.status(201).send({status:true,msg:"created successfully",data:popcart});
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }
@@ -161,7 +164,7 @@ const getCart = async (req,res) =>{
             return res.status(404).send({ status : false, message : "user not found"})
         }
         
-        let cart = await cartModel.findOne({userId})
+        let cart = await cartModel.findOne({userId}).populate("items.productId")
         if(!cart){
             return res.status(404).send({ status : false, message : "cart not found"})
         }
