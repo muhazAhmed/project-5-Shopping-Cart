@@ -94,7 +94,8 @@ const createProduct = async function (req, res) {
           }
         }
         data.availableSizes=size2
-        isFreeShipping = isFreeShipping.toLowerCase();
+        if(isFreeShipping){
+        isFreeShipping = isFreeShipping.toLowerCase()}
         if( files.length>0){
           let validImage=files[0].mimetype.split('/')
           if(validImage[0]!="image"){
