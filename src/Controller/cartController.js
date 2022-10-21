@@ -70,7 +70,7 @@ if(!validator.isValidObjectId(productId)){
           validCart.totalPrice = Number(updtotal);
           validCart.totalItems =validCart.items.length;
            validCart.save();
-          return res.status(200).send({status:true,data:validCart});
+          return res.status(201).send({status:true,data:validCart});
         }
      }
       // to add new product into cart
@@ -79,7 +79,7 @@ if(!validator.isValidObjectId(productId)){
       validCart.totalPrice = total
       validCart.totalItems =validCart.items.length;
        validCart.save();
-      return res.status(200).send({status:true,data:validCart});
+      return res.status(201).send({status:true,data:validCart});
     }
 }
     // for new cart
@@ -126,10 +126,10 @@ const updateCart=async (req,res)=>
                 //removeProduct validations
         if (removeProduct == 0 || removeProduct == 1);
           else return res.status(400).send({ status: false, message: "please  set to 0 to remove product completely from the cart or set removeProduct to 1 to decrease poduct quantity by 1" })
-        let existCart= await cartModel.findById(cartId).populate("items.productId")
+        let existCart= await cartModel.findOne({items : {$elemMatch : {productId : productId}}})
         
-        if(!existCart){
-          return  res.status(404).send({status:false,msg:"no cart found"})
+        if(existCart == undefined){
+          return  res.status(404).send({status:false,msg:"no such product found"})
         }
         if(existCart.userId != userId ){
             return res.status(400).send({ status: false, message :"cartId and Userid is not matching"})

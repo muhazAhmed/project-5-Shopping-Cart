@@ -89,7 +89,7 @@ const createProduct = async function (req, res) {
             .send({
               status: false,
               message:
-              "Sizes should one of these - 'S', 'XS', 'M', 'X', 'L', 'XXL' and 'XL'",
+              "Sizes should be from these - 'S', 'XS', 'M', 'X', 'L', 'XXL' and 'XL'",
             });
           }
         }
