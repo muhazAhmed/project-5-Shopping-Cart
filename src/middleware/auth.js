@@ -8,15 +8,15 @@ const authentication = (req, res, next) => {
         if (!token)
             return res.status(401).send({ status: false, msg: "token is required" });
         let btoken=token.split(" ")
-       // console.log(a[1])
+
         jwt.verify(btoken[1],"project-pltm", (error, decoded) =>{
-         //  console.log(decoded)
+
             if (error) {
                let message=(error.message=="jwt expired"?"token is expired,please login again":"token is invalid,not authenticated")
                  return res.status(401).send({ status: false, msg:message });
             } else {
               req.token = decoded;
-          //    console.log()
+
                 next(); }
         });
     } catch (error) {

@@ -50,11 +50,7 @@ const isValidObjectId = function (objectId) {
   return mongoose.isValidObjectId(objectId);
 };
 
-// const isValid = (value) => {
-//   if (typeof value === "undefined" || typeof value === "null") return false;
-//   if (typeof value === "string" && value.trim().length == 0) return false;
-//   if (typeof value == "string") return true;
-// }
+
 const isValidString = (String) => {
   return /^[a-zA-Z ]{2,45}$/.test(String)
 }
@@ -67,9 +63,7 @@ const isValidPrice = (price) => {
 const isValidNumber = (price) => {
   return /^[0-9]$/.test(price)
 }
-// const isValidObjectId = function (ObjectId) {
-//   return mongoose.Types.ObjectId.isValid(ObjectId);
-// }
+
 
 
 module.exports = { isValid, isValidRequestBody, isValidObjectId, isValidEmail, isValidPassword,
