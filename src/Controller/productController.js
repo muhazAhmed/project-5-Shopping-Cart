@@ -80,7 +80,7 @@ const createProduct = async function (req, res) {
       }
       let size1 = ["S", "XS", "M", "X", "L", "XXL","XL"];
       let size2 = availableSizes
-      .toUpperCase()
+      .toUpperCase()                      // use set for remove duplicate
       .split(",")
       .map((x) => x.trim());
       for (let i = 0; i < size2.length; i++) {
@@ -219,6 +219,10 @@ const updateProduct = async function (req, res) {
         .status(400)
         .send({ status: false, message: "provide productId" });
 
+        if (!valid.isValidRequestBody(req.body)) {
+          return res.status(400).send({ status: false, message: "Provide details to Update" })
+      }
+
     if (!valid.isValidObjectId(productId))
       return res
         .status(400)
@@ -245,8 +249,6 @@ const updateProduct = async function (req, res) {
       description,
       price,
       isFreeShipping,
-      currencyId,
-      currencyFormat,
       style,
       availableSizes,
       installments,
@@ -335,7 +337,7 @@ const updateProduct = async function (req, res) {
 
     if (isFreeShipping ) {
       isFreeShipping = isFreeShipping.toLowerCase();
-      if (typeof isFreeShipping != "boolean") {
+      if ( !isFreeShipping == "true" || !isFreeShipping == "false") {
         return res
           .status(400)
           .send({

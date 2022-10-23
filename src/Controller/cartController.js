@@ -51,6 +51,10 @@ if(!validator.isValidObjectId(productId)){
    let validCart = await cartModel.findOne( {userId : userId} ).populate("items.productId")
     
     if (validCart) {
+        if(!cartId){
+            return res.status(400).send({status:false,msg:"Cart for this User already created"})
+         }
+ 
         if (cartId) {
             if (validCart._id.toString() != cartId) {
                 return res.status(400).send({status:false,msg:"cart is not belong to you"});
