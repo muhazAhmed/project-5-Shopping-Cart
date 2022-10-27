@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FARINE-KHAN/Product-Management.git"
+    "url": "git+https://github.com/muhazAhmed/project-5-Shopping-Cart.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/FARINE-KHAN/Product-Management/issues"
+    "url": "https://github.com/muhazAhmed/project-5-Shopping-Cart.git/issues"
   },
-  "homepage": "https://github.com/FARINE-KHAN/Product-Management#readme",
+  "homepage": "https://github.com/muhazAhmed/project-5-Shopping-Cart.git#readme",
   "dependencies": {
     "aws-sdk": "^2.1231.0",
     "bcrypt": "^5.1.0",
