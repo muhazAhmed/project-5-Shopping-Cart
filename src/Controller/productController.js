@@ -185,26 +185,21 @@ const getProductByQuery = async (req,res)=> {
 
 const productByid = async function (req, res) {
   try {
-    let productId = req.params.productId;
-    if (!valid.isValidObjectId(productId))
-      return res
-        .status(400)
-        .send({ status: false, message: "Invalid ProductId" });
+      let requestBody = req.params.productId
+      if (!valid.isValidObjectId(requestBody)) {
+          return res.status(400).send({ status: false, message: "productid is of invalid" })
+      }
 
-    let product = await productModel.findOne({
-      _id: productId,
-      isDeleted: false,
-    });
-    if (!product)
-      return res.status(404).send({
-        status: false,
-        message: "No products found or product has been deleted",
-      });
-    res.status(200).send({ status: true, message: "Success", data: product });
-  } catch (error) {
-    return res.status(500).send({ status: false, message: error.message });
+      let productCheck = await productModel.findOne({ _id: requestBody, isDeleted: false })
+      if (!productCheck) {
+          return res.status(404).send({ status: false, message: "product not found or the product is deleted" })
+      }
+      res.status(200).send({ status: true,message: "Success", data: productCheck })
   }
-};
+  catch (error) {
+      return res.status(500).send({ status: false, message: error.message })
+  }
+}
 
 // ======================>  update by ID  <=================================
 

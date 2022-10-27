@@ -67,6 +67,7 @@ const updateOrder = async function (req, res) {
         let userId = req.params.userId
         let orderId = req.body.orderId
         let statusbody = req.body.status
+        
         if(!valid.isValidRequestBody(req.body))  {
             return res.status(400).send({ status: false, message: "Enter data" })  
         }
